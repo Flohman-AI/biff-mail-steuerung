@@ -2,11 +2,34 @@
 // Inhalte werden nur per textContent gesetzt (nie innerHTML), damit nichts eingeschleust wird.
 import { SPEICHER_SCHLUESSEL } from "./config.js";
 import { ApiFehler, GitHubApi } from "./api.js";
+import * as bereichAgent from "./bereich-agent.js";
+import * as bereichZeitplan from "./bereich-zeitplan.js";
+import * as bereichGedaechtnis from "./bereich-gedaechtnis.js";
+import * as bereichEntwuerfe from "./bereich-entwuerfe.js";
 
 const el = (id) => document.getElementById(id);
 
-// Für die Folge-Tickets: aktuelle API-Instanz nach erfolgreicher Anmeldung.
+// Aktuelle API-Instanz nach erfolgreicher Anmeldung.
 export let api = null;
+
+// Bereiche: Element-ID → Modul mit starten(api, element) und stoppen().
+const BEREICHE = {
+  "bereich-agent": bereichAgent,
+  "bereich-zeitplan": bereichZeitplan,
+  "bereich-gedaechtnis": bereichGedaechtnis,
+  "bereich-entwuerfe": bereichEntwuerfe,
+};
+
+function bereicheStarten() {
+  for (const [id, modul] of Object.entries(BEREICHE)) modul.starten(api, el(id));
+}
+
+function bereicheStoppen() {
+  for (const [id, modul] of Object.entries(BEREICHE)) {
+    modul.stoppen();
+    el(id).replaceChildren(); // geladene Daten nach dem Abmelden nicht stehen lassen
+  }
+}
 
 function tokenLesen() {
   return localStorage.getItem(SPEICHER_SCHLUESSEL) || sessionStorage.getItem(SPEICHER_SCHLUESSEL) || "";
@@ -29,6 +52,7 @@ function meldung(text) {
 }
 
 function anmeldungZeigen(text = "") {
+  if (api) bereicheStoppen();
   api = null;
   el("app").hidden = true;
   el("abmelden").hidden = true;
@@ -54,6 +78,7 @@ async function anmelden(token, merken, { still = false } = {}) {
     if (!still) tokenSpeichern(token, merken);
     api = neueApi;
     appZeigen(repo);
+    bereicheStarten();
   } catch (fehler) {
     if (fehler instanceof ApiFehler && (fehler.status === 401 || fehler.status === 404)) tokenLoeschen();
     anmeldungZeigen(fehler instanceof ApiFehler ? fehler.message : "Anmeldung fehlgeschlagen.");
