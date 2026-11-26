@@ -246,3 +246,5 @@ details { margin-top: 1rem; }
   max-height: 60vh;
   overflow: auto;
 }
+
+.logo { vertical-align: -0.45rem; border-radius: 8px; margin-right: 0.25rem; }

@@ -34,7 +34,7 @@ jobs:
         run: |
           VERSION="${GITHUB_SHA::7}"
           mkdir _site
-          cp index.html style.css *.js .nojekyll _site/
+          cp index.html style.css *.js logo.svg *.png manifest.webmanifest .nojekyll _site/
           sed -i "s/__VERSION__/${VERSION}/g" _site/index.html _site/style.css _site/*.js
           printf '{"version":"%s"}\n' "${VERSION}" > _site/version.json
           if grep -rq "__VERSION__" _site; then echo "Platzhalter nicht ersetzt."; exit 1; fi
