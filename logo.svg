@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="biff-mail Steuerung">
+  <rect width="512" height="512" rx="112" fill="#1f5fbf"/>
+  <rect x="88" y="150" width="336" height="228" rx="36" fill="#ffffff"/>
+  <path d="M104 178 L256 292 L408 178" fill="none" stroke="#1f5fbf" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="396" cy="376" r="74" fill="#f2b33d" stroke="#1f5fbf" stroke-width="22"/>
+  <path d="M360 378 L387 405 L436 348" fill="none" stroke="#1f5fbf" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
