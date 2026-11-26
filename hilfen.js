@@ -119,3 +119,18 @@ export function neueVersionVerfuegbar(aktuell, veroeffentlicht) {
   const v = String(veroeffentlicht || "").trim();
   return a !== "dev" && v !== "" && v !== a;
 }
+
+// --- Workflow-Zustand (#43) ------------------------------------------------------------
+
+// Hinweistext, wenn ein Workflow nicht gestartet werden kann; leer, wenn er aktiv ist.
+export function workflowHinweis(zustand, name = "Agent") {
+  if (!zustand || zustand === "active") return "";
+  if (zustand === "disabled_manually") return `Der Workflow „${name}“ ist ausgeschaltet.`;
+  if (zustand === "disabled_inactivity") return `Der Workflow „${name}“ wurde wegen Inaktivität deaktiviert.`;
+  return `Der Workflow „${name}“ ist deaktiviert.`;
+}
+
+// Link zur Workflow-Seite bei GitHub (dort lässt er sich wieder einschalten).
+export function workflowSeitenLink(besitzer, repo, datei) {
+  return `https://github.com/${encodeURIComponent(besitzer)}/${encodeURIComponent(repo)}/actions/workflows/${encodeURIComponent(datei)}`;
+}

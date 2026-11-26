@@ -88,3 +88,51 @@ test("Neue Version: nur bei echter, abweichender Version", () => {
   assert.equal(neueVersionVerfuegbar("a1b2c3d", ""), false);
   assert.equal(neueVersionVerfuegbar("__VERSION__", "e4f5a6b"), false); // lokal nie
 });
+
+import { workflowHinweis, workflowSeitenLink } from "../hilfen.js";
+import { workflowPruefen, workflowStarten } from "../aktionen.js";
+// Gleiche URL wie in den Modulen (mit ?v=…), sonst gäbe es zwei Klassen und instanceof schlüge fehl.
+import { ApiFehler } from "../api.js?v=__VERSION__";
+
+test("Workflow-Hinweis nur bei nicht aktivem Zustand", () => {
+  assert.equal(workflowHinweis("active"), "");
+  assert.equal(workflowHinweis(null), "");
+  assert.match(workflowHinweis("disabled_manually"), /ausgeschaltet/);
+  assert.match(workflowHinweis("disabled_inactivity", "Entwürfe"), /Entwürfe.*Inaktivität/);
+  assert.match(workflowHinweis("disabled_fork"), /deaktiviert/);
+  assert.equal(
+    workflowSeitenLink("Flohman-AI", "biff-mail-agent", "agent.yml"),
+    "https://github.com/Flohman-AI/biff-mail-agent/actions/workflows/agent.yml",
+  );
+});
+
+test("Start eines ausgeschalteten Workflows (422) liefert verständliche Meldung", async () => {
+  const api = {
+    repoPfad: (rest) => `/repos/x/y${rest}`,
+    anfrage: async () => { throw new ApiFehler("GitHub hat die Anfrage abgelehnt (ungültige Angaben).", 422); },
+  };
+  await assert.rejects(() => workflowStarten(api, "agent.yml"), /ausgeschaltet|lässt sich gerade nicht starten/);
+  const api500 = { repoPfad: (r) => r, anfrage: async () => { throw new ApiFehler("GitHub ist gerade nicht erreichbar.", 502); } };
+  await assert.rejects(() => workflowStarten(api500, "agent.yml"), /nicht erreichbar/); // andere Fehler bleiben
+});
+
+// Minimales DOM-Ersatzobjekt für workflowPruefen (nur textContent/replaceChildren/hidden).
+function fakeZiel() {
+  return { hidden: true, inhalt: [], replaceChildren(...k) { this.inhalt = k; } };
+}
+
+test("workflowPruefen: aktiv blockiert nicht, ausgeschaltet zeigt Hinweis", async () => {
+  globalThis.document ??= { createElement: () => ({ setAttribute() {}, append() {} }) };
+  const aktiv = { repoPfad: (r) => r, anfrage: async () => ({ state: "active" }) };
+  const z1 = fakeZiel();
+  assert.deepEqual(await workflowPruefen(aktiv, "agent.yml", "Agent", z1), { kannStarten: true, zustand: "active" });
+  assert.equal(z1.hidden, true);
+  const aus = { repoPfad: (r) => r, anfrage: async () => ({ state: "disabled_manually" }) };
+  const z2 = fakeZiel();
+  assert.deepEqual(await workflowPruefen(aus, "agent.yml", "Agent", z2), { kannStarten: false, zustand: "disabled_manually" });
+  assert.equal(z2.hidden, false);
+  assert.match(z2.inhalt[0], /ausgeschaltet/);
+  // Fehler beim Abfragen blockiert nicht
+  const kaputt = { repoPfad: (r) => r, anfrage: async () => { throw new Error("x"); } };
+  assert.equal((await workflowPruefen(kaputt, "agent.yml", "Agent", fakeZiel())).kannStarten, true);
+});

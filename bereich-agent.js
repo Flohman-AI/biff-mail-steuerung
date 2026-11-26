@@ -1,7 +1,7 @@
 // Bereich „Agent“: jetzt ausführen, Testlauf ohne Filter, letzte Läufe mit Ergebnis (#27).
 import { ApiFehler } from "./api.js?v=__VERSION__";
 import { WORKFLOWS } from "./config.js?v=__VERSION__";
-import { aufLaufWarten, cacheJsonLesen, element, knopf, letzteLaeufe, workflowStarten } from "./aktionen.js?v=__VERSION__";
+import { aufLaufWarten, cacheJsonLesen, element, knopf, letzteLaeufe, workflowPruefen, workflowStarten } from "./aktionen.js?v=__VERSION__";
 import { ergebnisText, laeufeNachId, laufArtText, laufStatusText, zeitDeutsch } from "./hilfen.js?v=__VERSION__";
 
 let timer = null;
@@ -12,6 +12,16 @@ export function starten(api, bereich) {
   bereich.replaceChildren();
   const status = element("p", { klasse: "status", attribute: { role: "status", "aria-live": "polite" } });
   const liste = element("ul", { klasse: "liste" });
+  const zustand = element("p", { klasse: "hinweis-box", attribute: { role: "status", hidden: "" } });
+  const zeitplan = element("p", { klasse: "leise" });
+  const startKnoepfe = [];
+
+  async function zustandPruefen() {
+    const { kannStarten, zustand: stand } = await workflowPruefen(api, WORKFLOWS.agent, "Agent", zustand);
+    zeitplan.textContent = stand ? `Zeitplan: ${stand === "active" ? "an" : "aus"}` : "";
+    for (const b of startKnoepfe) b.disabled = !kannStarten;
+    return kannStarten;
+  }
 
   async function laden() {
     clearTimeout(timer);
@@ -52,6 +62,7 @@ export function starten(api, bereich) {
 
   async function ausfuehren(ohneFilter) {
     if (ohneFilter && !confirm("Testlauf OHNE Absenderfilter: Alle Mails in ai_queue werden verarbeitet. Fortfahren?")) return;
+    if (!(await zustandPruefen())) return;
     for (const b of bereich.querySelectorAll("button")) b.disabled = true;
     try {
       const start = await workflowStarten(api, WORKFLOWS.agent, { ohne_filter: ohneFilter ? "true" : "false" });
@@ -67,14 +78,21 @@ export function starten(api, bereich) {
       status.textContent = fehler.message;
     } finally {
       for (const b of bereich.querySelectorAll("button")) b.disabled = false;
+      zustandPruefen();
       laden();
     }
   }
 
+  const jetzt = knopf("Agent jetzt ausführen", () => ausfuehren(false));
+  const test = knopf("Testlauf ohne Absenderfilter", () => ausfuehren(true), "knopf knopf-zweitrangig");
+  startKnoepfe.push(jetzt, test);
+
   bereich.append(
     element("h2", { text: "Agent starten & Status" }),
-    knopf("Agent jetzt ausführen", () => ausfuehren(false)),
-    knopf("Testlauf ohne Absenderfilter", () => ausfuehren(true), "knopf knopf-zweitrangig"),
+    zeitplan,
+    zustand,
+    jetzt,
+    test,
     status,
     element("div", { klasse: "zeile" }, [
       element("h3", { text: "Letzte Läufe" }),
@@ -82,6 +100,7 @@ export function starten(api, bereich) {
     ]),
     liste,
   );
+  zustandPruefen();
   laden();
 }
 
