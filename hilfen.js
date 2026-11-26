@@ -134,3 +134,102 @@ export function workflowHinweis(zustand, name = "Agent") {
 export function workflowSeitenLink(besitzer, repo, datei) {
   return `https://github.com/${encodeURIComponent(besitzer)}/${encodeURIComponent(repo)}/actions/workflows/${encodeURIComponent(datei)}`;
 }
+
+// --- Offene Themen (Checkliste, #42) ---------------------------------------------------------
+
+export const AUFGABEN_KOPF =
+  "# Offene Themen\n\n" +
+  "Checkliste für die Steuerseite. Der Agent schlägt nur unter „Vorschläge“ etwas vor; " +
+  "übernommen wird es erst auf der Steuerseite. Dieses Format bitte nicht von Hand umbauen:\n" +
+  "`- [ ] Text (Frist: JJJJ-MM-TT)`, erledigt: `- [x] Text (erledigt: JJJJ-MM-TT)`.\n";
+
+const ABSCHNITTE = { "vorschläge": "vorschlaege", offen: "offen", erledigt: "erledigt" };
+const FRIST_ENDE = /\s*\(Frist:\s*(\d{4}-\d{2}-\d{2})\)\s*$/;
+const ERLEDIGT_ENDE = /\s*\(erledigt:\s*(\d{4}-\d{2}-\d{2})\)\s*$/;
+
+// memory/aufgaben.md → { vorschlaege, offen, erledigt }, je [{ text, frist, erledigt }].
+export function aufgabenParsen(text) {
+  const daten = { vorschlaege: [], offen: [], erledigt: [] };
+  let abschnitt = null;
+  for (const roh of String(text || "").replace(/\r\n/g, "\n").split("\n")) {
+    const ueberschrift = /^##\s+(.*?)\s*$/.exec(roh);
+    if (ueberschrift) {
+      abschnitt = ABSCHNITTE[ueberschrift[1].toLowerCase()] || null;
+      continue;
+    }
+    const zeile = /^\s*[-*]\s*\[([ xX])\]\s*(.*?)\s*$/.exec(roh);
+    if (!zeile || !abschnitt) continue;
+    let rest = zeile[2];
+    let frist = "";
+    let erledigt = "";
+    const e = ERLEDIGT_ENDE.exec(rest);
+    if (e) { erledigt = e[1]; rest = rest.replace(ERLEDIGT_ENDE, ""); }
+    const f = FRIST_ENDE.exec(rest);
+    if (f) { frist = f[1]; rest = rest.replace(FRIST_ENDE, ""); }
+    if (rest.trim()) daten[abschnitt].push({ text: rest.trim(), frist, erledigt });
+  }
+  return daten;
+}
+
+function aufgabenZeile(eintrag, erledigt) {
+  const text = String(eintrag.text).replace(/\s+/g, " ").trim();
+  if (erledigt) return `- [x] ${text}${eintrag.erledigt ? ` (erledigt: ${eintrag.erledigt})` : ""}`;
+  return `- [ ] ${text}${eintrag.frist ? ` (Frist: ${eintrag.frist})` : ""}`;
+}
+
+export function aufgabenText(daten) {
+  const teil = (titel, liste, erledigt) => [`## ${titel}`, ...liste.map((e) => aufgabenZeile(e, erledigt)), ""];
+  return [
+    AUFGABEN_KOPF,
+    ...teil("Vorschläge", daten.vorschlaege, false),
+    ...teil("Offen", daten.offen, false),
+    ...teil("Erledigt", daten.erledigt, true),
+  ].join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n";
+}
+
+// Offene Einträge: mit Frist zuerst (früheste oben), danach ohne Frist; sonst Reihenfolge der Datei.
+export function aufgabenSortieren(liste) {
+  return liste
+    .map((e, i) => ({ e, i }))
+    .sort((a, b) => {
+      if (a.e.frist && b.e.frist && a.e.frist !== b.e.frist) return a.e.frist < b.e.frist ? -1 : 1;
+      if (!!a.e.frist !== !!b.e.frist) return a.e.frist ? -1 : 1;
+      return a.i - b.i;
+    })
+    .map(({ e }) => e);
+}
+
+export function datumIso(d = new Date()) {
+  const z = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+}
+
+export function gueltigesDatum(text) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false;
+  const d = new Date(`${text}T00:00:00`);
+  return !Number.isNaN(d.getTime()) && datumIso(d) === text;
+}
+
+export function fristDeutsch(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || "");
+  return m ? `${m[3]}.${m[2]}.${m[1]}` : "";
+}
+
+// Eingabe „01.12.2026“ oder „2026-12-01“ → ISO; leer → ""; ungültig → null.
+export function fristEinlesen(eingabe) {
+  const t = String(eingabe || "").trim();
+  if (!t) return "";
+  const de = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(t);
+  const iso = de ? `${de[3]}-${de[2].padStart(2, "0")}-${de[1].padStart(2, "0")}` : t;
+  return gueltigesDatum(iso) ? iso : null;
+}
+
+// „faellig“ (überfällig), „heute“, „bald“ (innerhalb von 3 Tagen) oder "".
+export function fristStatus(frist, heute = new Date()) {
+  if (!gueltigesDatum(frist || "")) return "";
+  const h = datumIso(heute);
+  if (frist < h) return "faellig";
+  if (frist === h) return "heute";
+  const grenze = new Date(heute.getFullYear(), heute.getMonth(), heute.getDate() + 3);
+  return frist <= datumIso(grenze) ? "bald" : "";
+}

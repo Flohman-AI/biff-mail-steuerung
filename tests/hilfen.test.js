@@ -136,3 +136,62 @@ test("workflowPruefen: aktiv blockiert nicht, ausgeschaltet zeigt Hinweis", asyn
   const kaputt = { repoPfad: (r) => r, anfrage: async () => { throw new Error("x"); } };
   assert.equal((await workflowPruefen(kaputt, "agent.yml", "Agent", fakeZiel())).kannStarten, true);
 });
+
+import {
+  aufgabenParsen, aufgabenSortieren, aufgabenText, fristDeutsch, fristEinlesen, fristStatus,
+} from "../hilfen.js";
+
+const AUFGABEN = `# Offene Themen
+
+## Vorschläge
+- [ ] Zusage zum Ausflug
+
+## Offen
+- [ ] Beleg nachreichen (Frist: 2026-12-10)
+- [ ] Arzttermin klären
+- [ ] Rechnung prüfen (Frist: 2026-12-01)
+
+## Erledigt
+- [x] Spange nachstellen (erledigt: 2026-11-20)
+`;
+
+test("Aufgaben: Parsen mit Fristen und Erledigt-Datum", () => {
+  const d = aufgabenParsen(AUFGABEN);
+  assert.deepEqual(d.vorschlaege, [{ text: "Zusage zum Ausflug", frist: "", erledigt: "" }]);
+  assert.equal(d.offen.length, 3);
+  assert.deepEqual(d.offen[0], { text: "Beleg nachreichen", frist: "2026-12-10", erledigt: "" });
+  assert.deepEqual(d.erledigt[0], { text: "Spange nachstellen", frist: "", erledigt: "2026-11-20" });
+  assert.deepEqual(aufgabenParsen(""), { vorschlaege: [], offen: [], erledigt: [] });
+  assert.deepEqual(aufgabenParsen(undefined).offen, []);
+});
+
+test("Aufgaben: Text hin und zurück bleibt gleich (Erledigt bleibt erhalten)", () => {
+  const d = aufgabenParsen(AUFGABEN);
+  const text = aufgabenText(d);
+  assert.deepEqual(aufgabenParsen(text), d);
+  assert.ok(text.startsWith("# Offene Themen"));
+  assert.ok(text.includes("- [x] Spange nachstellen (erledigt: 2026-11-20)"));
+  // Leere Datei ergibt alle drei Abschnitte
+  const leer = aufgabenText({ vorschlaege: [], offen: [], erledigt: [] });
+  for (const titel of ["## Vorschläge", "## Offen", "## Erledigt"]) assert.ok(leer.includes(titel));
+});
+
+test("Aufgaben: Sortierung nach Frist, dann ohne Frist in Dateireihenfolge", () => {
+  const sortiert = aufgabenSortieren(aufgabenParsen(AUFGABEN).offen).map((e) => e.text);
+  assert.deepEqual(sortiert, ["Rechnung prüfen", "Beleg nachreichen", "Arzttermin klären"]);
+});
+
+test("Aufgaben: Fristen einlesen und bewerten", () => {
+  assert.equal(fristEinlesen("01.12.2026"), "2026-12-01");
+  assert.equal(fristEinlesen("2026-12-01"), "2026-12-01");
+  assert.equal(fristEinlesen("  "), "");
+  assert.equal(fristEinlesen("31.02.2026"), null);
+  assert.equal(fristEinlesen("morgen"), null);
+  assert.equal(fristDeutsch("2026-12-01"), "01.12.2026");
+  const heute = new Date(2026, 11, 1);
+  assert.equal(fristStatus("2026-11-30", heute), "faellig");
+  assert.equal(fristStatus("2026-12-01", heute), "heute");
+  assert.equal(fristStatus("2026-12-03", heute), "bald");
+  assert.equal(fristStatus("2026-12-20", heute), "");
+  assert.equal(fristStatus("", heute), "");
+});

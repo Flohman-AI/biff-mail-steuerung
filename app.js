@@ -7,6 +7,7 @@ import * as bereichAgent from "./bereich-agent.js?v=__VERSION__";
 import * as bereichZeitplan from "./bereich-zeitplan.js?v=__VERSION__";
 import * as bereichGedaechtnis from "./bereich-gedaechtnis.js?v=__VERSION__";
 import * as bereichEntwuerfe from "./bereich-entwuerfe.js?v=__VERSION__";
+import * as bereichAufgaben from "./bereich-aufgaben.js?v=__VERSION__";
 
 const el = (id) => document.getElementById(id);
 
@@ -19,6 +20,7 @@ const BEREICHE = {
   "bereich-zeitplan": bereichZeitplan,
   "bereich-gedaechtnis": bereichGedaechtnis,
   "bereich-entwuerfe": bereichEntwuerfe,
+  "bereich-aufgaben": bereichAufgaben,
 };
 
 function bereicheStarten() {

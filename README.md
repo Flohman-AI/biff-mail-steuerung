@@ -25,6 +25,14 @@ Repo `biff-mail-agent`. Ohne Token sieht niemand etwas.
 „Auf diesem Gerät angemeldet bleiben“ speichert den Token nur im Browser dieses Geräts
 (localStorage). Ohne Haken gilt er nur, bis der Tab geschlossen wird.
 
+## Offene Themen (Checkliste)
+
+Reiter „Offene Themen“: Themen und Fristen abhaken, hinzufügen, ändern und löschen. Die Daten liegen
+in `memory/aufgaben.md` im Repo `biff-mail-agent` (Commit direkt auf `main`, wie beim Gedächtnis).
+Der Agent legt neue Fristen nur als **Vorschlag** an; übernommen wird er erst hier. Erledigtes
+bleibt mit Datum im eingeklappten Abschnitt „Erledigt“. In die Datei gehören nur kurze Stichpunkte,
+keine Mails oder Adressen. Der Token braucht dafür wie beim Gedächtnis „Contents: Read and write“.
+
 ## Sicherheit
 
 - Der Token hat **Schreibrechte**: nur auf eigenen Geräten verwenden.

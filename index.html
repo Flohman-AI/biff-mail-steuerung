@@ -47,6 +47,7 @@
 
       <nav class="reiter" aria-label="Bereiche">
         <button class="reiter-knopf" type="button" data-ziel="bereich-agent" aria-current="page">Agent</button>
+        <button class="reiter-knopf" type="button" data-ziel="bereich-aufgaben">Offene Themen</button>
         <button class="reiter-knopf" type="button" data-ziel="bereich-zeitplan">Zeitplan</button>
         <button class="reiter-knopf" type="button" data-ziel="bereich-gedaechtnis">Gedächtnis</button>
         <button class="reiter-knopf" type="button" data-ziel="bereich-entwuerfe">Entwürfe</button>
@@ -54,6 +55,10 @@
 
       <section id="bereich-agent" class="karte bereich" aria-labelledby="t-agent">
         <h2 id="t-agent">Agent starten &amp; Status</h2>
+        <p class="platzhalter">Wird geladen …</p>
+      </section>
+      <section id="bereich-aufgaben" class="karte bereich" aria-labelledby="t-aufgaben" hidden>
+        <h2 id="t-aufgaben">Offene Themen</h2>
         <p class="platzhalter">Wird geladen …</p>
       </section>
       <section id="bereich-zeitplan" class="karte bereich" aria-labelledby="t-zeitplan" hidden>
