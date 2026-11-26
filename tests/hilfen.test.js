@@ -138,7 +138,7 @@ test("workflowPruefen: aktiv blockiert nicht, ausgeschaltet zeigt Hinweis", asyn
 });
 
 import {
-  aufgabenParsen, aufgabenSortieren, aufgabenText, fristDeutsch, fristEinlesen, fristStatus,
+  aufgabenParsen, aufgabenSortieren, aufgabenText, mailAnzeige, fristDeutsch, fristEinlesen, fristStatus,
 } from "../hilfen.js";
 
 const AUFGABEN = `# Offene Themen
@@ -194,4 +194,47 @@ test("Aufgaben: Fristen einlesen und bewerten", () => {
   assert.equal(fristStatus("2026-12-03", heute), "bald");
   assert.equal(fristStatus("2026-12-20", heute), "");
   assert.equal(fristStatus("", heute), "");
+});
+
+test("Aufgaben: Mail-Verweis wird gelesen und beim Speichern erhalten", () => {
+  const roh = `# Offene Themen
+
+## Vorschläge
+- [ ] Zusage bis 01.12.2026 {Mail: <orig@example.net>, Datum: 2026-11-20}
+
+## Offen
+- [ ] Beleg (Frist: 2026-12-10) {Mail: <b@example.net>}
+- [ ] Ohne Verweis
+
+## Erledigt
+- [x] Alt (erledigt: 2026-11-01) {Mail: <c@example.net>, Datum: 2026-10-30}
+`;
+  const d = aufgabenParsen(roh);
+  assert.deepEqual(d.vorschlaege[0], {
+    text: "Zusage bis 01.12.2026", frist: "", erledigt: "", mailId: "<orig@example.net>", mailDatum: "2026-11-20",
+  });
+  assert.equal(d.offen[0].frist, "2026-12-10");
+  assert.equal(d.offen[0].mailId, "<b@example.net>");
+  assert.equal(d.offen[1].mailId, undefined);
+  assert.equal(d.erledigt[0].erledigt, "2026-11-01");
+  const text = aufgabenText(d);
+  assert.ok(text.includes("- [ ] Zusage bis 01.12.2026 {Mail: <orig@example.net>, Datum: 2026-11-20}"));
+  assert.ok(text.includes("- [ ] Beleg (Frist: 2026-12-10) {Mail: <b@example.net>}"));
+  assert.ok(text.includes("- [x] Alt (erledigt: 2026-11-01) {Mail: <c@example.net>, Datum: 2026-10-30}"));
+  assert.deepEqual(aufgabenParsen(text), d);
+});
+
+test("Aufgaben: ungültige Mail-ID wird nicht geschrieben", () => {
+  const text = aufgabenText({ vorschlaege: [], offen: [{ text: "X", frist: "", erledigt: "", mailId: "<a b>" }], erledigt: [] });
+  assert.ok(text.includes("- [ ] X\n"));
+  assert.ok(!text.includes("Mail:"));
+});
+
+test("Mail anzeigen: Ergebnis prüfen", () => {
+  const id = "<orig@example.net>";
+  assert.equal(mailAnzeige(null, id).art, "fehlt");
+  assert.equal(mailAnzeige({ id: "<andere@x>", gefunden: true }, id).art, "fehlt");
+  assert.equal(mailAnzeige({ id, gefunden: false }, id).art, "nicht-gefunden");
+  const m = mailAnzeige({ id, gefunden: true, datum: "2026-11-20T08:00:00", rolle: "Gegenseite", betreff: "B", text: "T" }, id);
+  assert.deepEqual(m, { art: "mail", kopf: "20.11.2026 · von: Gegenseite", betreff: "B", text: "T" });
 });

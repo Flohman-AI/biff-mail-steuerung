@@ -2,15 +2,32 @@
 // memory/aufgaben.md (main). Gespeichert wird als Commit direkt auf main (Ausnahme für memory/,
 // CLAUDE.md Abschnitt 7). Der Agent legt nur Vorschläge an; übernommen wird hier.
 import { ApiFehler } from "./api.js?v=__VERSION__";
-import { dateiLesen, dateiSchreiben, element, knopf } from "./aktionen.js?v=__VERSION__";
+import { WORKFLOWS } from "./config.js?v=__VERSION__";
 import {
-  aufgabenParsen, aufgabenSortieren, aufgabenText, datumIso, fristDeutsch, fristEinlesen, fristStatus,
+  aufLaufWarten, cacheJsonLesen, dateiLesen, dateiSchreiben, element, knopf, workflowPruefen, workflowStarten,
+} from "./aktionen.js?v=__VERSION__";
+import {
+  aufgabenParsen, aufgabenSortieren, aufgabenText, mailAnzeige, datumIso, fristDeutsch, fristEinlesen, fristStatus,
 } from "./hilfen.js?v=__VERSION__";
 
 const DATEI = "memory/aufgaben.md";
 
+// Die geöffnete Mail liegt nur kurz im Daten-Branch; beim Schließen/Abmelden wird sie dort gelöscht.
+let offeneApi = null;
+let mailOffen = false;
+
+async function mailAufraeumen() {
+  const api = offeneApi;
+  if (!api || !mailOffen) return;
+  mailOffen = false;
+  try {
+    await workflowStarten(api, WORKFLOWS.mailAnzeigen, { aktion: "leeren", mail_id: "" });
+  } catch { /* best effort: der Cache wird beim nächsten Lauf ohnehin ersetzt */ }
+}
+
 export function starten(api, bereich) {
   bereich.replaceChildren();
+  offeneApi = api;
   let stand = { text: "", sha: undefined };
   let beschaeftigt = false;
 
@@ -20,6 +37,14 @@ export function starten(api, bereich) {
   const erledigtBox = element("ul", { klasse: "liste" });
   const erledigtZaehler = element("summary", { text: "Erledigt" });
   const erledigt = element("details", {}, [erledigtZaehler, erledigtBox]);
+  const mailHinweis = element("p", { klasse: "leise", attribute: { hidden: "" } });
+  const mailKopf = element("p", { klasse: "leise" });
+  const mailBetreff = element("h3");
+  const mailText = element("pre", { klasse: "mail-text" });
+  const mailBox = element("section", { klasse: "eintrag", attribute: { hidden: "", "aria-label": "Mail" } }, [
+    mailBetreff, mailKopf, mailText,
+    knopf("Schließen", () => mailSchliessen(), "knopf knopf-leise"),
+  ]);
   const neuText = element("input", {
     attribute: { id: "aufgabe-text", type: "text", placeholder: "Neues Thema, z. B. „Beleg nachreichen“", "aria-label": "Neues Thema", maxlength: "300" },
   });
@@ -66,6 +91,50 @@ export function starten(api, bereich) {
     }
   }
 
+  function mailSchliessen() {
+    mailBox.hidden = true;
+    mailText.textContent = "";
+    mailAufraeumen();
+  }
+
+  async function mailZeigen(e) {
+    if (beschaeftigt) return;
+    sperren(true);
+    mailBox.hidden = true;
+    status.textContent = "Mail wird geholt … (ca. 30–60 Sekunden)";
+    try {
+      const pruefung = await workflowPruefen(api, WORKFLOWS.mailAnzeigen, "Mail anzeigen", mailHinweis);
+      if (!pruefung.kannStarten) { status.textContent = ""; return; }
+      mailOffen = true;
+      const start = await workflowStarten(api, WORKFLOWS.mailAnzeigen, { aktion: "anzeigen", mail_id: e.mailId });
+      const lauf = await aufLaufWarten(api, WORKFLOWS.mailAnzeigen, start, {
+        beiStatus: (l, s) => { status.textContent = `Mail wird geholt … ${s} s`; },
+      });
+      if (lauf.conclusion !== "success") {
+        status.textContent = "Fehlgeschlagen. Details im Log des Workflows „Mail anzeigen“ (ohne Inhalte).";
+        return;
+      }
+      const ergebnis = mailAnzeige(await cacheJsonLesen(api, "mail.json"), e.mailId);
+      if (ergebnis.art === "mail") {
+        mailBetreff.textContent = ergebnis.betreff || "(ohne Betreff)";
+        mailKopf.textContent = ergebnis.kopf;
+        mailText.textContent = ergebnis.text;
+        mailBox.hidden = false;
+        status.textContent = "";
+      } else {
+        status.textContent = ergebnis.art === "nicht-gefunden"
+          ? "Die Mail wurde im Postfach nicht gefunden."
+          : "Die Mail konnte nicht gelesen werden. Bitte noch einmal versuchen.";
+      }
+    } catch (fehler) {
+      status.textContent = fehler.message;
+    } finally {
+      sperren(false);
+    }
+  }
+
+  const mailKnopf = (e) => (e.mailId ? knopf("Mail anzeigen", () => mailZeigen(e), "knopf knopf-leise") : null);
+
   function fristMarke(frist) {
     if (!frist) return null;
     const art = fristStatus(frist);
@@ -84,6 +153,7 @@ export function starten(api, bereich) {
         element("ul", { klasse: "liste" }, daten.vorschlaege.map((v) => element("li", { klasse: "eintrag" }, [
           element("div", { text: v.text }),
           element("div", { klasse: "zeile" }, [
+            mailKnopf(v),
             knopf("Übernehmen", () => aendern((d) => {
               const i = d.vorschlaege.findIndex((x) => x.text === v.text);
               if (i < 0) return false;
@@ -107,12 +177,13 @@ export function starten(api, bereich) {
             const i = d.offen.findIndex((x) => x.text === e.text && x.frist === e.frist);
             if (i < 0) return false;
             const [eintrag] = d.offen.splice(i, 1);
-            d.erledigt.unshift({ text: eintrag.text, frist: "", erledigt: datumIso() });
+            d.erledigt.unshift({ ...eintrag, frist: "", erledigt: datumIso() });
           }, "Als erledigt markiert."), "knopf haken-knopf"),
           element("span", { text: e.text, klasse: "aufgabe-text" }),
         ]),
         fristMarke(e.frist),
         element("div", { klasse: "zeile" }, [
+          mailKnopf(e),
           knopf("Ändern", () => bearbeiten(e), "knopf knopf-leise"),
           knopf("Löschen", () => {
             if (!confirm(`„${e.text}“ löschen?`)) return;
@@ -134,7 +205,7 @@ export function starten(api, bereich) {
         const i = d.erledigt.findIndex((x) => x.text === e.text && x.erledigt === e.erledigt);
         if (i < 0) return false;
         const [eintrag] = d.erledigt.splice(i, 1);
-        d.offen.push({ text: eintrag.text, frist: "", erledigt: "" });
+        d.offen.push({ ...eintrag, frist: "", erledigt: "" });
       }, "Wieder geöffnet."), "knopf knopf-leise"),
     ])));
   }
@@ -151,7 +222,7 @@ export function starten(api, bereich) {
     aendern((d) => {
       const i = d.offen.findIndex((x) => x.text === e.text && x.frist === e.frist);
       if (i < 0) return false;
-      d.offen[i] = { text: neu, frist, erledigt: "" };
+      d.offen[i] = { ...d.offen[i], text: neu, frist, erledigt: "" };
     }, "Geändert.");
   }
 
@@ -172,6 +243,8 @@ export function starten(api, bereich) {
     ]),
     element("p", { klasse: "leise", text: "Abhaken, was erledigt ist. Änderungen werden sofort gespeichert." }),
     status,
+    mailHinweis,
+    mailBox,
     vorschlagBox,
     element("h3", { text: "Offen" }),
     listeBox,
@@ -185,4 +258,6 @@ export function starten(api, bereich) {
   laden();
 }
 
-export function stoppen() {}
+export function stoppen() {
+  mailAufraeumen();
+}

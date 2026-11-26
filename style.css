@@ -237,3 +237,12 @@ input[type="text"] { min-height: 48px; }
 .frist-faellig { border-color: var(--fehler); color: var(--fehler); font-weight: 700; }
 .frist-heute, .frist-bald { border-color: var(--akzent); color: var(--akzent); font-weight: 700; }
 details { margin-top: 1rem; }
+
+.mail-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  margin: 0.5rem 0;
+  max-height: 60vh;
+  overflow: auto;
+}

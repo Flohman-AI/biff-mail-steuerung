@@ -33,6 +33,12 @@ Der Agent legt neue Fristen nur als **Vorschlag** an; übernommen wird er erst h
 bleibt mit Datum im eingeklappten Abschnitt „Erledigt“. In die Datei gehören nur kurze Stichpunkte,
 keine Mails oder Adressen. Der Token braucht dafür wie beim Gedächtnis „Contents: Read and write“.
 
+**Mail anzeigen:** Hat ein Thema einen Verweis auf die Quellmail (`{Mail: <Message-ID>, Datum: …}` am
+Zeilenende), erscheint der Knopf „Mail anzeigen“. Er startet den Workflow „Mail anzeigen“ im Repo
+`biff-mail-agent` (Postfach nur lesend, Adressen durch Rollen ersetzt, Text gekürzt). Das Ergebnis
+liegt nur kurz als `mail.json` im Branch `steuerung-cache` und wird beim Schließen der Mail bzw.
+beim Abmelden wieder entfernt. Der Token braucht dafür zusätzlich „Actions: Read and write“.
+
 ## Sicherheit
 
 - Der Token hat **Schreibrechte**: nur auf eigenen Geräten verwenden.
