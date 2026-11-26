@@ -1,0 +1,9 @@
+{
+  "name": "biff-mail-steuerung",
+  "private": true,
+  "type": "module",
+  "description": "Mobile Steuerseite für den biff-mail-agent (statisch, ohne Build)",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}
