@@ -1,0 +1,134 @@
+/* Mobil zuerst: eine Spalte, große Touch-Ziele (mind. 48 px), Desktop nur mit Maximalbreite. */
+:root {
+  --hintergrund: #f6f7f9;
+  --karte: #ffffff;
+  --text: #1c1f24;
+  --leise: #5b6470;
+  --rand: #d9dde3;
+  --akzent: #1f5fbf;
+  --akzent-text: #ffffff;
+  --fehler: #b3261e;
+  --radius: 12px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hintergrund: #121417;
+    --karte: #1c1f24;
+    --text: #e8eaed;
+    --leise: #9aa3ad;
+    --rand: #343a42;
+    --akzent: #7aa7ff;
+    --akzent-text: #0b1220;
+    --fehler: #ff8a80;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--hintergrund);
+  color: var(--text);
+}
+
+.kopf, main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+h1 { font-size: 1.25rem; margin: 0.5rem 0; }
+h2 { font-size: 1.1rem; margin: 0 0 0.75rem; }
+
+.karte {
+  background: var(--karte);
+  border: 1px solid var(--rand);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+label { display: block; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+
+input[type="password"] {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: var(--hintergrund);
+  color: var(--text);
+}
+
+.haken {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 400;
+  min-height: 48px;
+}
+.haken input { width: 1.4rem; height: 1.4rem; }
+
+.knopf {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 0;
+  border-radius: 10px;
+  background: var(--akzent);
+  color: var(--akzent-text);
+  cursor: pointer;
+}
+.knopf:disabled { opacity: 0.6; cursor: progress; }
+
+.knopf-leise {
+  width: auto;
+  margin: 0;
+  background: transparent;
+  color: var(--akzent);
+  border: 1px solid var(--rand);
+}
+
+.reiter {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+.reiter-knopf {
+  min-height: 48px;
+  font-size: 1rem;
+  border: 1px solid var(--rand);
+  border-radius: 10px;
+  background: var(--karte);
+  color: var(--text);
+  cursor: pointer;
+}
+.reiter-knopf[aria-current="page"] {
+  background: var(--akzent);
+  color: var(--akzent-text);
+  border-color: var(--akzent);
+}
+
+.meldung { color: var(--fehler); font-weight: 600; }
+.hinweis, .platzhalter { color: var(--leise); }
+
+@media (min-width: 40rem) {
+  .reiter { grid-template-columns: repeat(4, 1fr); }
+}
