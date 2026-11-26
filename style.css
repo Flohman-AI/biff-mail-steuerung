@@ -132,3 +132,97 @@ input[type="password"] {
 @media (min-width: 40rem) {
   .reiter { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* --- Bereiche (#27–#30) ------------------------------------------------------------ */
+h3 { font-size: 1rem; margin: 1rem 0 0.5rem; }
+a { color: var(--akzent); }
+
+.knopf-zweitrangig {
+  background: transparent;
+  color: var(--akzent);
+  border: 2px solid var(--akzent);
+}
+
+.zeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.zeile .knopf { width: auto; margin-top: 0; }
+
+.status { min-height: 1.5em; margin: 0.75rem 0; font-weight: 600; }
+
+.liste { list-style: none; margin: 0; padding: 0; }
+.eintrag {
+  border-top: 1px solid var(--rand);
+  padding: 0.75rem 0;
+}
+.eintrag-kopf {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+.leise { color: var(--leise); }
+
+.marke {
+  font-size: 0.85rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--rand);
+  white-space: nowrap;
+}
+.marke-success { border-color: #2e7d32; color: #2e7d32; }
+.marke-failure, .marke-cancelled { border-color: var(--fehler); color: var(--fehler); }
+.marke-in_progress, .marke-queued { border-color: var(--akzent); color: var(--akzent); }
+
+.listen-knopf {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  margin: 0.4rem 0;
+  font-size: 1rem;
+  border: 1px solid var(--rand);
+  border-radius: 10px;
+  background: var(--karte);
+  color: var(--text);
+  cursor: pointer;
+}
+
+textarea, input[type="text"] {
+  width: 100%;
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: var(--hintergrund);
+  color: var(--text);
+}
+textarea { min-height: 18rem; resize: vertical; line-height: 1.45; }
+input[type="text"] { min-height: 48px; }
+
+.schalter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 48px;
+}
+
+.diff { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; }
+.diff-neu { background: rgba(46, 125, 50, 0.15); }
+.diff-weg { background: rgba(179, 38, 30, 0.15); text-decoration: line-through; }
+
+.md-titel { font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0; }
+.md-abschnitt { font-weight: 700; margin: 1rem 0 0.25rem; }
+.md-punkt { margin: 0.2rem 0 0.2rem 1.2rem; list-style: disc; display: list-item; }
+.hinweis-box {
+  border-left: 4px solid var(--akzent);
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0;
+  background: var(--hintergrund);
+}
