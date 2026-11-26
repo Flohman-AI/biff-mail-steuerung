@@ -1,8 +1,8 @@
 // Bereich „Gedächtnis“: memory/fakten_und_vereinbarungen.md ansehen und bearbeiten (#29).
 // Gespeichert wird als Commit direkt auf main (Ausnahme für memory/, CLAUDE.md Abschnitt 7).
-import { ApiFehler } from "./api.js";
-import { dateiLesen, dateiSchreiben, element, knopf } from "./aktionen.js";
-import { markdownBloecke, zeilenDiff } from "./hilfen.js";
+import { ApiFehler } from "./api.js?v=__VERSION__";
+import { dateiLesen, dateiSchreiben, element, knopf } from "./aktionen.js?v=__VERSION__";
+import { markdownBloecke, zeilenDiff } from "./hilfen.js?v=__VERSION__";
 
 const FAKTEN = "memory/fakten_und_vereinbarungen.md";
 const HISTORIE = "memory/historie_zusammenfassung.md";

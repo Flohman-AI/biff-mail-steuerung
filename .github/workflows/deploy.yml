@@ -1,0 +1,49 @@
+name: Veröffentlichen
+
+# Veröffentlicht die Steuerseite per GitHub Pages (Quelle: „GitHub Actions“) bei jedem Push auf
+# main. Der Platzhalter __VERSION__ wird nur im Build-Verzeichnis durch den Kurz-Hash des
+# Commits ersetzt, nicht im Repo. So haben alle Dateien einer Version eindeutige URLs
+# (app.js?v=…), und der Browser mischt trotz Cache (max-age=600) keine Versionen.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Seite bauen und Version setzen
+        run: |
+          VERSION="${GITHUB_SHA::7}"
+          mkdir _site
+          cp index.html style.css *.js .nojekyll _site/
+          sed -i "s/__VERSION__/${VERSION}/g" _site/index.html _site/style.css _site/*.js
+          printf '{"version":"%s"}\n' "${VERSION}" > _site/version.json
+          if grep -rq "__VERSION__" _site; then echo "Platzhalter nicht ersetzt."; exit 1; fi
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,7 +1,7 @@
 // Bausteine für die Bereiche: Workflows starten und abwarten, Dateien lesen/schreiben.
-import { ApiFehler } from "./api.js";
-import { CACHE_BRANCH, HAUPT_BRANCH } from "./config.js";
-import { base64ZuText, textZuBase64 } from "./hilfen.js";
+import { ApiFehler } from "./api.js?v=__VERSION__";
+import { CACHE_BRANCH, HAUPT_BRANCH } from "./config.js?v=__VERSION__";
+import { base64ZuText, textZuBase64 } from "./hilfen.js?v=__VERSION__";
 
 const warte = (ms) => new Promise((r) => setTimeout(r, ms));
 

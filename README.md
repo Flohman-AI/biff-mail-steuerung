@@ -38,5 +38,20 @@ Repo `biff-mail-agent`. Ohne Token sieht niemand etwas.
 ## Entwicklung
 
 Statisch, ohne Build: `index.html`, `style.css`, `config.js`, `api.js`, `app.js`.
-Tests: `npm test` (Node 22+). Änderungen erst auf `develop`, dann Pull Request nach `main`
-(GitHub Pages veröffentlicht `main`).
+Tests: `npm test` (Node 22+). Änderungen erst auf `develop`, dann Pull Request nach `main`.
+
+## Veröffentlichung und Versionierung
+
+GitHub Pages liefert Dateien mit `Cache-Control: max-age=600`. Damit der Browser nach einem Update
+keine Mischung aus neuen und alten Dateien lädt, tragen alle Dateien und Modul-Imports den
+Parameter `?v=__VERSION__`. Der Workflow `deploy.yml` ersetzt den Platzhalter bei jedem Push auf
+`main` im Build-Verzeichnis durch den Kurz-Hash des Commits (im Repo bleibt der Platzhalter
+stehen), schreibt eine `version.json` und veröffentlicht die Seite.
+
+- **Einmalig einstellen:** Repo-Einstellungen → Pages → Quelle auf **„GitHub Actions“** setzen
+  (statt „Deploy from branch“).
+- **Lokal und Tests:** Ohne Ersetzung funktioniert alles; die Seite zeigt unten „dev“.
+- **Neue Version:** Liegt nach dem Laden eine neuere Version vor, erscheint oben „Neue Version
+  verfügbar“ mit Knopf zum Neuladen. Unten steht immer die geladene Version.
+- Neue Imports immer als `from "./datei.js?v=__VERSION__"` schreiben, sonst lädt der Browser ein
+  Modul doppelt.

@@ -72,3 +72,19 @@ test("aufLaufWarten findet den neuen Lauf und wartet bis fertig", async () => {
   assert.equal(lauf.id, 2);
   assert.deepEqual(gesehen, [null, 2, 2]);
 });
+
+import { neueVersionVerfuegbar, versionAnzeige } from "../hilfen.js";
+
+test("Version: Platzhalter ergibt dev, echte Version bleibt", () => {
+  assert.equal(versionAnzeige("__VERSION__"), "dev");
+  assert.equal(versionAnzeige(""), "dev");
+  assert.equal(versionAnzeige(undefined), "dev");
+  assert.equal(versionAnzeige("a1b2c3d"), "a1b2c3d");
+});
+
+test("Neue Version: nur bei echter, abweichender Version", () => {
+  assert.equal(neueVersionVerfuegbar("a1b2c3d", "a1b2c3d"), false);
+  assert.equal(neueVersionVerfuegbar("a1b2c3d", "e4f5a6b"), true);
+  assert.equal(neueVersionVerfuegbar("a1b2c3d", ""), false);
+  assert.equal(neueVersionVerfuegbar("__VERSION__", "e4f5a6b"), false); // lokal nie
+});

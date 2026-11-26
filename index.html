@@ -4,19 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src https://api.github.com; img-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+        content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="robots" content="noindex, nofollow">
   <meta name="color-scheme" content="light dark">
   <title>biff-mail Steuerung</title>
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="app.js"></script>
+  <link rel="stylesheet" href="style.css?v=__VERSION__">
+  <script type="module" src="app.js?v=__VERSION__"></script>
 </head>
 <body>
   <header class="kopf">
     <h1>biff-mail Steuerung</h1>
     <button id="abmelden" class="knopf knopf-leise" type="button" hidden>Abmelden</button>
   </header>
+
+  <p id="neue-version" class="hinweis-box" role="status" hidden>
+    Neue Version verfügbar. <button id="neu-laden" class="knopf knopf-leise" type="button">Neu laden</button>
+  </p>
 
   <main>
     <!-- Anmeldung: ohne Token wird nichts geladen und nichts angezeigt -->
@@ -66,5 +70,7 @@
       </section>
     </section>
   </main>
+
+  <footer class="fuss"><small>Version <span id="version">dev</span></small></footer>
 </body>
 </html>

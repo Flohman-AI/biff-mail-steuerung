@@ -1,8 +1,8 @@
 // Bereich „Agent“: jetzt ausführen, Testlauf ohne Filter, letzte Läufe mit Ergebnis (#27).
-import { ApiFehler } from "./api.js";
-import { WORKFLOWS } from "./config.js";
-import { aufLaufWarten, cacheJsonLesen, element, knopf, letzteLaeufe, workflowStarten } from "./aktionen.js";
-import { ergebnisText, laeufeNachId, laufArtText, laufStatusText, zeitDeutsch } from "./hilfen.js";
+import { ApiFehler } from "./api.js?v=__VERSION__";
+import { WORKFLOWS } from "./config.js?v=__VERSION__";
+import { aufLaufWarten, cacheJsonLesen, element, knopf, letzteLaeufe, workflowStarten } from "./aktionen.js?v=__VERSION__";
+import { ergebnisText, laeufeNachId, laufArtText, laufStatusText, zeitDeutsch } from "./hilfen.js?v=__VERSION__";
 
 let timer = null;
 let aktiv = false;

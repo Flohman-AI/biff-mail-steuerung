@@ -104,3 +104,18 @@ export function markdownBloecke(text) {
   }
   return bloecke;
 }
+
+// --- Version (#36) -----------------------------------------------------------------------
+
+// Zeigt die Version an; ein nicht ersetzter Platzhalter („__…__“) ergibt „dev“.
+export function versionAnzeige(version) {
+  const v = String(version || "").trim();
+  return !v || /^__\w+__$/.test(v) ? "dev" : v;
+}
+
+// True, wenn auf GitHub Pages eine andere Version liegt als die geladene. Lokal („dev“) nie.
+export function neueVersionVerfuegbar(aktuell, veroeffentlicht) {
+  const a = versionAnzeige(aktuell);
+  const v = String(veroeffentlicht || "").trim();
+  return a !== "dev" && v !== "" && v !== a;
+}
