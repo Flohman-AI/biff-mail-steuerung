@@ -1,9 +1,9 @@
 // Bereich „Entwürfe“: ansehen, von Claude überarbeiten lassen (Vorschau), ersetzen (#30).
 // Jede Aktion startet den Workflow „Entwürfe“ in biff-mail-agent (ca. 30–60 s); die Ergebnisse
 // liegen danach im Daten-Branch steuerung-cache (entwuerfe.json, vorschlag.json).
-import { WORKFLOWS } from "./config.js";
-import { aufLaufWarten, cacheJsonLesen, element, knopf, workflowStarten } from "./aktionen.js";
-import { laufStatusText, zeitDeutsch } from "./hilfen.js";
+import { WORKFLOWS } from "./config.js?v=__VERSION__";
+import { aufLaufWarten, cacheJsonLesen, element, knopf, workflowStarten } from "./aktionen.js?v=__VERSION__";
+import { laufStatusText, zeitDeutsch } from "./hilfen.js?v=__VERSION__";
 
 export function starten(api, bereich) {
   bereich.replaceChildren();

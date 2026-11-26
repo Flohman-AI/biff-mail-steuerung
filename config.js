@@ -13,3 +13,7 @@ export const CACHE_BRANCH = "steuerung-cache";
 
 // Zeitplan aus agent.yml: alle 20 Minuten, 05–21 Uhr UTC.
 export const ZEITPLAN = Object.freeze({ minutenTakt: 20, stundeVonUtc: 5, stundeBisUtc: 21 });
+
+// Wird beim Veröffentlichen (Workflow deploy.yml) durch den Kurz-Hash des Commits ersetzt.
+// Lokal bleibt der Platzhalter stehen; die Seite zeigt dann „dev“.
+export const VERSION = "__VERSION__";

@@ -72,3 +72,126 @@ test("aufLaufWarten findet den neuen Lauf und wartet bis fertig", async () => {
   assert.equal(lauf.id, 2);
   assert.deepEqual(gesehen, [null, 2, 2]);
 });
+
+import { neueVersionVerfuegbar, versionAnzeige } from "../hilfen.js";
+
+test("Version: Platzhalter ergibt dev, echte Version bleibt", () => {
+  assert.equal(versionAnzeige("__VERSION__"), "dev");
+  assert.equal(versionAnzeige(""), "dev");
+  assert.equal(versionAnzeige(undefined), "dev");
+  assert.equal(versionAnzeige("a1b2c3d"), "a1b2c3d");
+});
+
+test("Neue Version: nur bei echter, abweichender Version", () => {
+  assert.equal(neueVersionVerfuegbar("a1b2c3d", "a1b2c3d"), false);
+  assert.equal(neueVersionVerfuegbar("a1b2c3d", "e4f5a6b"), true);
+  assert.equal(neueVersionVerfuegbar("a1b2c3d", ""), false);
+  assert.equal(neueVersionVerfuegbar("__VERSION__", "e4f5a6b"), false); // lokal nie
+});
+
+import { workflowHinweis, workflowSeitenLink } from "../hilfen.js";
+import { workflowPruefen, workflowStarten } from "../aktionen.js";
+// Gleiche URL wie in den Modulen (mit ?v=…), sonst gäbe es zwei Klassen und instanceof schlüge fehl.
+import { ApiFehler } from "../api.js?v=__VERSION__";
+
+test("Workflow-Hinweis nur bei nicht aktivem Zustand", () => {
+  assert.equal(workflowHinweis("active"), "");
+  assert.equal(workflowHinweis(null), "");
+  assert.match(workflowHinweis("disabled_manually"), /ausgeschaltet/);
+  assert.match(workflowHinweis("disabled_inactivity", "Entwürfe"), /Entwürfe.*Inaktivität/);
+  assert.match(workflowHinweis("disabled_fork"), /deaktiviert/);
+  assert.equal(
+    workflowSeitenLink("Flohman-AI", "biff-mail-agent", "agent.yml"),
+    "https://github.com/Flohman-AI/biff-mail-agent/actions/workflows/agent.yml",
+  );
+});
+
+test("Start eines ausgeschalteten Workflows (422) liefert verständliche Meldung", async () => {
+  const api = {
+    repoPfad: (rest) => `/repos/x/y${rest}`,
+    anfrage: async () => { throw new ApiFehler("GitHub hat die Anfrage abgelehnt (ungültige Angaben).", 422); },
+  };
+  await assert.rejects(() => workflowStarten(api, "agent.yml"), /ausgeschaltet|lässt sich gerade nicht starten/);
+  const api500 = { repoPfad: (r) => r, anfrage: async () => { throw new ApiFehler("GitHub ist gerade nicht erreichbar.", 502); } };
+  await assert.rejects(() => workflowStarten(api500, "agent.yml"), /nicht erreichbar/); // andere Fehler bleiben
+});
+
+// Minimales DOM-Ersatzobjekt für workflowPruefen (nur textContent/replaceChildren/hidden).
+function fakeZiel() {
+  return { hidden: true, inhalt: [], replaceChildren(...k) { this.inhalt = k; } };
+}
+
+test("workflowPruefen: aktiv blockiert nicht, ausgeschaltet zeigt Hinweis", async () => {
+  globalThis.document ??= { createElement: () => ({ setAttribute() {}, append() {} }) };
+  const aktiv = { repoPfad: (r) => r, anfrage: async () => ({ state: "active" }) };
+  const z1 = fakeZiel();
+  assert.deepEqual(await workflowPruefen(aktiv, "agent.yml", "Agent", z1), { kannStarten: true, zustand: "active" });
+  assert.equal(z1.hidden, true);
+  const aus = { repoPfad: (r) => r, anfrage: async () => ({ state: "disabled_manually" }) };
+  const z2 = fakeZiel();
+  assert.deepEqual(await workflowPruefen(aus, "agent.yml", "Agent", z2), { kannStarten: false, zustand: "disabled_manually" });
+  assert.equal(z2.hidden, false);
+  assert.match(z2.inhalt[0], /ausgeschaltet/);
+  // Fehler beim Abfragen blockiert nicht
+  const kaputt = { repoPfad: (r) => r, anfrage: async () => { throw new Error("x"); } };
+  assert.equal((await workflowPruefen(kaputt, "agent.yml", "Agent", fakeZiel())).kannStarten, true);
+});
+
+import {
+  aufgabenParsen, aufgabenSortieren, aufgabenText, fristDeutsch, fristEinlesen, fristStatus,
+} from "../hilfen.js";
+
+const AUFGABEN = `# Offene Themen
+
+## Vorschläge
+- [ ] Zusage zum Ausflug
+
+## Offen
+- [ ] Beleg nachreichen (Frist: 2026-12-10)
+- [ ] Arzttermin klären
+- [ ] Rechnung prüfen (Frist: 2026-12-01)
+
+## Erledigt
+- [x] Spange nachstellen (erledigt: 2026-11-20)
+`;
+
+test("Aufgaben: Parsen mit Fristen und Erledigt-Datum", () => {
+  const d = aufgabenParsen(AUFGABEN);
+  assert.deepEqual(d.vorschlaege, [{ text: "Zusage zum Ausflug", frist: "", erledigt: "" }]);
+  assert.equal(d.offen.length, 3);
+  assert.deepEqual(d.offen[0], { text: "Beleg nachreichen", frist: "2026-12-10", erledigt: "" });
+  assert.deepEqual(d.erledigt[0], { text: "Spange nachstellen", frist: "", erledigt: "2026-11-20" });
+  assert.deepEqual(aufgabenParsen(""), { vorschlaege: [], offen: [], erledigt: [] });
+  assert.deepEqual(aufgabenParsen(undefined).offen, []);
+});
+
+test("Aufgaben: Text hin und zurück bleibt gleich (Erledigt bleibt erhalten)", () => {
+  const d = aufgabenParsen(AUFGABEN);
+  const text = aufgabenText(d);
+  assert.deepEqual(aufgabenParsen(text), d);
+  assert.ok(text.startsWith("# Offene Themen"));
+  assert.ok(text.includes("- [x] Spange nachstellen (erledigt: 2026-11-20)"));
+  // Leere Datei ergibt alle drei Abschnitte
+  const leer = aufgabenText({ vorschlaege: [], offen: [], erledigt: [] });
+  for (const titel of ["## Vorschläge", "## Offen", "## Erledigt"]) assert.ok(leer.includes(titel));
+});
+
+test("Aufgaben: Sortierung nach Frist, dann ohne Frist in Dateireihenfolge", () => {
+  const sortiert = aufgabenSortieren(aufgabenParsen(AUFGABEN).offen).map((e) => e.text);
+  assert.deepEqual(sortiert, ["Rechnung prüfen", "Beleg nachreichen", "Arzttermin klären"]);
+});
+
+test("Aufgaben: Fristen einlesen und bewerten", () => {
+  assert.equal(fristEinlesen("01.12.2026"), "2026-12-01");
+  assert.equal(fristEinlesen("2026-12-01"), "2026-12-01");
+  assert.equal(fristEinlesen("  "), "");
+  assert.equal(fristEinlesen("31.02.2026"), null);
+  assert.equal(fristEinlesen("morgen"), null);
+  assert.equal(fristDeutsch("2026-12-01"), "01.12.2026");
+  const heute = new Date(2026, 11, 1);
+  assert.equal(fristStatus("2026-11-30", heute), "faellig");
+  assert.equal(fristStatus("2026-12-01", heute), "heute");
+  assert.equal(fristStatus("2026-12-03", heute), "bald");
+  assert.equal(fristStatus("2026-12-20", heute), "");
+  assert.equal(fristStatus("", heute), "");
+});

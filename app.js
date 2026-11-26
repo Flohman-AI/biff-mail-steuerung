@@ -1,11 +1,13 @@
 // Ablauf der Steuerseite: Anmeldung, Abmeldung, Bereiche umschalten.
 // Inhalte werden nur per textContent gesetzt (nie innerHTML), damit nichts eingeschleust wird.
-import { SPEICHER_SCHLUESSEL } from "./config.js";
-import { ApiFehler, GitHubApi } from "./api.js";
-import * as bereichAgent from "./bereich-agent.js";
-import * as bereichZeitplan from "./bereich-zeitplan.js";
-import * as bereichGedaechtnis from "./bereich-gedaechtnis.js";
-import * as bereichEntwuerfe from "./bereich-entwuerfe.js";
+import { SPEICHER_SCHLUESSEL, VERSION } from "./config.js?v=__VERSION__";
+import { neueVersionVerfuegbar, versionAnzeige } from "./hilfen.js?v=__VERSION__";
+import { ApiFehler, GitHubApi } from "./api.js?v=__VERSION__";
+import * as bereichAgent from "./bereich-agent.js?v=__VERSION__";
+import * as bereichZeitplan from "./bereich-zeitplan.js?v=__VERSION__";
+import * as bereichGedaechtnis from "./bereich-gedaechtnis.js?v=__VERSION__";
+import * as bereichEntwuerfe from "./bereich-entwuerfe.js?v=__VERSION__";
+import * as bereichAufgaben from "./bereich-aufgaben.js?v=__VERSION__";
 
 const el = (id) => document.getElementById(id);
 
@@ -18,6 +20,7 @@ const BEREICHE = {
   "bereich-zeitplan": bereichZeitplan,
   "bereich-gedaechtnis": bereichGedaechtnis,
   "bereich-entwuerfe": bereichEntwuerfe,
+  "bereich-aufgaben": bereichAufgaben,
 };
 
 function bereicheStarten() {
@@ -98,7 +101,31 @@ function bereichZeigen(ziel) {
   }
 }
 
+// Prüft, ob nach dem Laden eine neuere Version veröffentlicht wurde (version.json, #36).
+async function versionPruefen() {
+  if (versionAnzeige(VERSION) === "dev") return;
+  try {
+    const antwort = await fetch(`version.json?t=${Date.now()}`, { cache: "no-store" });
+    if (!antwort.ok) return;
+    const daten = await antwort.json();
+    el("neue-version").hidden = !neueVersionVerfuegbar(VERSION, daten && daten.version);
+  } catch {
+    // Keine Verbindung oder keine version.json: kein Hinweis, nichts kaputt machen.
+  }
+}
+
 function start() {
+  el("version").textContent = versionAnzeige(VERSION);
+  el("neu-laden").addEventListener("click", () => {
+    // Mit neuem Parameter laden, damit auch index.html nicht aus dem Cache kommt.
+    location.href = `${location.pathname}?neu=${Date.now()}`;
+  });
+  versionPruefen();
+  setInterval(versionPruefen, 5 * 60 * 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) versionPruefen();
+  });
+
   el("anmelde-formular").addEventListener("submit", (ereignis) => {
     ereignis.preventDefault();
     const token = el("token").value.trim();

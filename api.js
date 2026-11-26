@@ -1,7 +1,7 @@
 // Kleiner Wrapper für authentifizierte Aufrufe der GitHub-API.
 // Der Token wird nur im Authorization-Header verwendet: nie geloggt, nie in URLs,
 // nie in Fehlermeldungen.
-import { API_BASIS, REPO } from "./config.js";
+import { API_BASIS, REPO } from "./config.js?v=__VERSION__";
 
 export class ApiFehler extends Error {
   constructor(nachricht, status = 0) {

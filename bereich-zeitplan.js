@@ -1,8 +1,8 @@
 // Bereich „Zeitplan“: automatischen Lauf (agent.yml) an- und ausschalten (#28).
-import { ApiFehler } from "./api.js";
-import { WORKFLOWS, ZEITPLAN } from "./config.js";
-import { element, knopf, letzteLaeufe } from "./aktionen.js";
-import { laufStatusText, naechsterGeplanterLauf, zeitDeutsch } from "./hilfen.js";
+import { ApiFehler } from "./api.js?v=__VERSION__";
+import { WORKFLOWS, ZEITPLAN } from "./config.js?v=__VERSION__";
+import { element, knopf, letzteLaeufe } from "./aktionen.js?v=__VERSION__";
+import { laufStatusText, naechsterGeplanterLauf, zeitDeutsch } from "./hilfen.js?v=__VERSION__";
 
 function uhrzeit(datum) {
   return datum.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });

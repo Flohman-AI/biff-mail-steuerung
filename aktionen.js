@@ -1,18 +1,57 @@
 // Bausteine für die Bereiche: Workflows starten und abwarten, Dateien lesen/schreiben.
-import { ApiFehler } from "./api.js";
-import { CACHE_BRANCH, HAUPT_BRANCH } from "./config.js";
-import { base64ZuText, textZuBase64 } from "./hilfen.js";
+import { ApiFehler } from "./api.js?v=__VERSION__";
+import { CACHE_BRANCH, HAUPT_BRANCH, REPO } from "./config.js?v=__VERSION__";
+import { base64ZuText, textZuBase64, workflowHinweis, workflowSeitenLink } from "./hilfen.js?v=__VERSION__";
 
 const warte = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Startet einen Workflow (workflow_dispatch) und gibt den Startzeitpunkt zurück.
 export async function workflowStarten(api, datei, inputs = {}, ref = HAUPT_BRANCH) {
   const start = new Date();
-  await api.anfrage(api.repoPfad(`/actions/workflows/${encodeURIComponent(datei)}/dispatches`), {
-    method: "POST",
-    body: { ref, inputs },
-  });
+  try {
+    await api.anfrage(api.repoPfad(`/actions/workflows/${encodeURIComponent(datei)}/dispatches`), {
+      method: "POST",
+      body: { ref, inputs },
+    });
+  } catch (fehler) {
+    // 422 beim Start: meist ist der Workflow ausgeschaltet (oder die Eingaben passen nicht).
+    if (fehler instanceof ApiFehler && fehler.status === 422) {
+      throw new ApiFehler(
+        "Der Workflow lässt sich gerade nicht starten. Vielleicht ist er ausgeschaltet: bei GitHub unter Actions prüfen.",
+        422,
+      );
+    }
+    throw fehler;
+  }
   return start;
+}
+
+// Zustand eines Workflows („active“, „disabled_manually“ …). Bei Fehlern null: dann nicht blockieren.
+export async function workflowZustand(api, datei) {
+  try {
+    const daten = await api.anfrage(api.repoPfad(`/actions/workflows/${encodeURIComponent(datei)}`));
+    return (daten && daten.state) || null;
+  } catch {
+    return null;
+  }
+}
+
+// Zeigt in `ziel` einen Hinweis mit Link, wenn der Workflow nicht aktiv ist, und gibt zurück, ob er
+// gestartet werden kann ({ kannStarten, zustand }). Die Seite schaltet nichts selbst ein oder aus (das tut der Bereich Zeitplan).
+export async function workflowPruefen(api, datei, name, ziel) {
+  const zustand = await workflowZustand(api, datei);
+  const text = workflowHinweis(zustand, name);
+  ziel.hidden = !text;
+  if (!text) {
+    ziel.replaceChildren();
+    return { kannStarten: true, zustand };
+  }
+  const link = element("a", {
+    text: "Bei GitHub öffnen",
+    attribute: { href: workflowSeitenLink(REPO.besitzer, REPO.name, datei), target: "_blank", rel: "noopener noreferrer" },
+  });
+  ziel.replaceChildren(`${text} Zum Einschalten: Reiter „Zeitplan“ oder bei GitHub unter Actions. `, link);
+  return { kannStarten: false, zustand };
 }
 
 export async function letzteLaeufe(api, datei, anzahl = 10, ereignis = "") {

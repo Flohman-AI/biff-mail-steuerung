@@ -130,7 +130,7 @@ input[type="password"] {
 .hinweis, .platzhalter { color: var(--leise); }
 
 @media (min-width: 40rem) {
-  .reiter { grid-template-columns: repeat(4, 1fr); }
+  .reiter { grid-template-columns: repeat(5, 1fr); }
 }
 
 /* --- Bereiche (#27–#30) ------------------------------------------------------------ */
@@ -192,7 +192,7 @@ a { color: var(--akzent); }
   cursor: pointer;
 }
 
-textarea, input[type="text"] {
+textarea, input[type="text"], input[type="date"] {
   width: 100%;
   font: inherit;
   font-size: 1rem;
@@ -226,3 +226,14 @@ input[type="text"] { min-height: 48px; }
   margin: 0.75rem 0;
   background: var(--hintergrund);
 }
+
+.fuss { margin: 1.5rem 0 1rem; text-align: center; color: var(--leise); }
+
+/* --- Offene Themen (#42) ---------------------------------------------------------------- */
+.aufgabe-kopf { display: flex; align-items: flex-start; gap: 0.6rem; }
+.aufgabe-text { flex: 1; font-weight: 600; overflow-wrap: anywhere; }
+.haken-knopf { width: 48px; min-height: 48px; margin-top: 0; padding: 0; font-size: 1.4rem; flex: none; }
+.erledigt-text { text-decoration: line-through; color: var(--leise); overflow-wrap: anywhere; }
+.frist-faellig { border-color: var(--fehler); color: var(--fehler); font-weight: 700; }
+.frist-heute, .frist-bald { border-color: var(--akzent); color: var(--akzent); font-weight: 700; }
+details { margin-top: 1rem; }
