@@ -145,6 +145,8 @@ export const AUFGABEN_KOPF =
 
 const ABSCHNITTE = { "vorschläge": "vorschlaege", offen: "offen", erledigt: "erledigt" };
 const FRIST_ENDE = /\s*\(Frist:\s*(\d{4}-\d{2}-\d{2})\)\s*$/;
+// Verweis auf die Quellmail (#47): {Mail: <Message-ID>, Datum: JJJJ-MM-TT} am Zeilenende.
+const MAIL_ENDE = /\s*\{Mail:\s*(<[^<>{}\s"\\,]{1,200}>)(?:,\s*Datum:\s*(\d{4}-\d{2}-\d{2}))?\s*\}\s*$/;
 const ERLEDIGT_ENDE = /\s*\(erledigt:\s*(\d{4}-\d{2}-\d{2})\)\s*$/;
 
 // memory/aufgaben.md → { vorschlaege, offen, erledigt }, je [{ text, frist, erledigt }].
@@ -162,19 +164,37 @@ export function aufgabenParsen(text) {
     let rest = zeile[2];
     let frist = "";
     let erledigt = "";
+    let mail = null;
+    const m = MAIL_ENDE.exec(rest);
+    if (m) { mail = { mailId: m[1], mailDatum: m[2] || "" }; rest = rest.replace(MAIL_ENDE, ""); }
     const e = ERLEDIGT_ENDE.exec(rest);
     if (e) { erledigt = e[1]; rest = rest.replace(ERLEDIGT_ENDE, ""); }
     const f = FRIST_ENDE.exec(rest);
     if (f) { frist = f[1]; rest = rest.replace(FRIST_ENDE, ""); }
-    if (rest.trim()) daten[abschnitt].push({ text: rest.trim(), frist, erledigt });
+    if (rest.trim()) daten[abschnitt].push({ text: rest.trim(), frist, erledigt, ...(mail || {}) });
   }
   return daten;
 }
 
+function mailVerweis(eintrag) {
+  if (!eintrag.mailId || !MAIL_ENDE.test(` {Mail: ${eintrag.mailId}}`)) return "";
+  return ` {Mail: ${eintrag.mailId}${eintrag.mailDatum ? `, Datum: ${eintrag.mailDatum}` : ""}}`;
+}
+
 function aufgabenZeile(eintrag, erledigt) {
   const text = String(eintrag.text).replace(/\s+/g, " ").trim();
-  if (erledigt) return `- [x] ${text}${eintrag.erledigt ? ` (erledigt: ${eintrag.erledigt})` : ""}`;
-  return `- [ ] ${text}${eintrag.frist ? ` (Frist: ${eintrag.frist})` : ""}`;
+  if (erledigt) return `- [x] ${text}${eintrag.erledigt ? ` (erledigt: ${eintrag.erledigt})` : ""}${mailVerweis(eintrag)}`;
+  return `- [ ] ${text}${eintrag.frist ? ` (Frist: ${eintrag.frist})` : ""}${mailVerweis(eintrag)}`;
+}
+
+// Inhalt von mail.json (Cache) → Anzeige. Prüft, dass es die angeforderte Mail ist.
+export function mailAnzeige(daten, mailId) {
+  if (!daten || typeof daten !== "object" || daten.id !== mailId) return { art: "fehlt" };
+  if (!daten.gefunden) return { art: "nicht-gefunden" };
+  const teile = [];
+  if (daten.datum) teile.push(fristDeutsch(String(daten.datum).slice(0, 10)));
+  if (daten.rolle) teile.push(`von: ${daten.rolle}`);
+  return { art: "mail", kopf: teile.join(" · "), betreff: String(daten.betreff || ""), text: String(daten.text || "") };
 }
 
 export function aufgabenText(daten) {

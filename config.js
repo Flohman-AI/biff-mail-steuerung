@@ -7,6 +7,7 @@ export const SPEICHER_SCHLUESSEL = "biff-steuerung-token";
 export const WORKFLOWS = Object.freeze({
   agent: "agent.yml",
   entwuerfe: "entwuerfe.yml",
+  mailAnzeigen: "mail-anzeigen.yml",
 });
 export const HAUPT_BRANCH = "main";
 export const CACHE_BRANCH = "steuerung-cache";
