@@ -38,5 +38,5 @@ Repo `biff-mail-agent`. Ohne Token sieht niemand etwas.
 ## Entwicklung
 
 Statisch, ohne Build: `index.html`, `style.css`, `config.js`, `api.js`, `app.js`.
-Tests: `node --test tests/` (Node 20+). Änderungen erst auf `develop`, dann Pull Request nach `main`
+Tests: `npm test` (Node 22+). Änderungen erst auf `develop`, dann Pull Request nach `main`
 (GitHub Pages veröffentlicht `main`).
