@@ -5,6 +5,7 @@ import { ApiFehler, GitHubApi } from "./api.js";
 import * as bereichAgent from "./bereich-agent.js";
 import * as bereichZeitplan from "./bereich-zeitplan.js";
 import * as bereichGedaechtnis from "./bereich-gedaechtnis.js";
+import * as bereichEntwuerfe from "./bereich-entwuerfe.js";
 
 const el = (id) => document.getElementById(id);
 
@@ -16,6 +17,7 @@ const BEREICHE = {
   "bereich-agent": bereichAgent,
   "bereich-zeitplan": bereichZeitplan,
   "bereich-gedaechtnis": bereichGedaechtnis,
+  "bereich-entwuerfe": bereichEntwuerfe,
 };
 
 function bereicheStarten() {
