@@ -3,6 +3,7 @@
 import { SPEICHER_SCHLUESSEL } from "./config.js";
 import { ApiFehler, GitHubApi } from "./api.js";
 import * as bereichAgent from "./bereich-agent.js";
+import * as bereichZeitplan from "./bereich-zeitplan.js";
 
 const el = (id) => document.getElementById(id);
 
@@ -12,6 +13,7 @@ export let api = null;
 // Bereiche: Element-ID → Modul mit starten(api, element) und stoppen().
 const BEREICHE = {
   "bereich-agent": bereichAgent,
+  "bereich-zeitplan": bereichZeitplan,
 };
 
 function bereicheStarten() {
