@@ -1,29 +1,47 @@
-/* Mobil zuerst: eine Spalte, große Touch-Ziele (mind. 48 px), Desktop nur mit Maximalbreite. */
+/* biff-mail Steuerung: ruhige, klare Oberfläche für den Alltag. Mobil zuerst, große Touch-Ziele
+   (mind. 48 px), Reiter als untere Leiste am Handy und als Segmente am Desktop. */
 :root {
-  --hintergrund: #f6f7f9;
+  --hintergrund: #eaeef3;
   --karte: #ffffff;
-  --text: #1c1f24;
-  --leise: #5b6470;
-  --rand: #d9dde3;
+  --flaeche: #f3f6f9;
+  --text: #14202b;
+  --leise: #53616f;
+  --rand: #d5dce4;
   --akzent: #1f5fbf;
   --akzent-text: #ffffff;
+  --akzent-weich: #e3edfb;
+  --kopf: #10213a;
+  --kopf-text: #ffffff;
+  --bernstein: #f2b33d;
+  --bernstein-weich: #fdf1d6;
+  --gruen: #1f7a3a;
   --fehler: #b3261e;
-  --radius: 12px;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --radius: 16px;
+  --radius-klein: 10px;
+  --schatten: 0 1px 2px rgba(16, 33, 58, 0.06), 0 6px 18px rgba(16, 33, 58, 0.06);
+  --nav-hoehe: 4.5rem;
+  font-family: "Avenir Next", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
   font-size: 17px;
   line-height: 1.5;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --hintergrund: #121417;
-    --karte: #1c1f24;
-    --text: #e8eaed;
-    --leise: #9aa3ad;
-    --rand: #343a42;
-    --akzent: #7aa7ff;
-    --akzent-text: #0b1220;
-    --fehler: #ff8a80;
+    --hintergrund: #0d141d;
+    --karte: #16202c;
+    --flaeche: #1b2735;
+    --text: #e8edf3;
+    --leise: #9fadbb;
+    --rand: #2c3a4a;
+    --akzent: #7fa9f2;
+    --akzent-text: #0b1526;
+    --akzent-weich: #1c2d49;
+    --kopf: #0a111b;
+    --bernstein-weich: #3a2f14;
+    --gruen: #6fcf8a;
+    --fehler: #ff9088;
+    --schatten: 0 1px 2px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -33,45 +51,78 @@ body {
   margin: 0;
   background: var(--hintergrund);
   color: var(--text);
+  padding-bottom: calc(var(--nav-hoehe) + env(safe-area-inset-bottom));
 }
+@media (min-width: 48rem) { body { padding-bottom: 0; } }
 
-.kopf, main {
-  max-width: 40rem;
+:focus-visible { outline: 3px solid var(--bernstein); outline-offset: 2px; }
+
+/* --- Kopf ------------------------------------------------------------------------------- */
+.kopf {
+  background: var(--kopf);
+  color: var(--kopf-text);
+  padding-top: env(safe-area-inset-top);
+}
+.kopf-innen, main {
+  max-width: 44rem;
   margin: 0 auto;
   padding: 0 1rem;
 }
-
-.kopf {
+.kopf-innen {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-top: max(1rem, env(safe-area-inset-top));
+  min-height: 4rem;
+}
+h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.logo { border-radius: 9px; flex: none; }
+.kopf .knopf-leise {
+  color: var(--kopf-text);
+  border-color: rgba(255, 255, 255, 0.35);
+  min-height: 40px;
+  padding: 0.3rem 0.9rem;
 }
 
-h1 { font-size: 1.25rem; margin: 0.5rem 0; }
-h2 { font-size: 1.1rem; margin: 0 0 0.75rem; }
+h2 { font-size: 1.3rem; margin: 0 0 0.25rem; letter-spacing: -0.01em; line-height: 1.25; }
+h3 { font-size: 1.02rem; margin: 1.4rem 0 0.4rem; }
+a { color: var(--akzent); }
+code { background: var(--flaeche); padding: 0.05rem 0.35rem; border-radius: 6px; font-size: 0.9em; }
 
+/* --- Flächen ---------------------------------------------------------------------------- */
 .karte {
   background: var(--karte);
   border: 1px solid var(--rand);
   border-radius: var(--radius);
-  padding: 1rem;
+  box-shadow: var(--schatten);
+  padding: 1.15rem;
   margin: 1rem 0;
 }
 
-label { display: block; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+label { display: block; font-weight: 600; margin: 0.9rem 0 0.3rem; }
 
-input[type="password"] {
+input[type="password"], textarea, input[type="text"], input[type="date"] {
   width: 100%;
-  min-height: 48px;
-  padding: 0.5rem 0.75rem;
+  font: inherit;
   font-size: 1rem;
+  padding: 0.6rem 0.8rem;
   border: 1px solid var(--rand);
-  border-radius: 8px;
-  background: var(--hintergrund);
+  border-radius: var(--radius-klein);
+  background: var(--flaeche);
   color: var(--text);
 }
+input[type="password"], input[type="text"], input[type="date"] { min-height: 48px; }
+textarea { min-height: 18rem; resize: vertical; line-height: 1.5; }
+input:focus-visible, textarea:focus-visible { outline-offset: 0; border-color: var(--akzent); }
 
 .haken {
   display: flex;
@@ -80,130 +131,177 @@ input[type="password"] {
   font-weight: 400;
   min-height: 48px;
 }
-.haken input { width: 1.4rem; height: 1.4rem; }
+.haken input { width: 1.4rem; height: 1.4rem; accent-color: var(--akzent); }
 
+/* --- Knöpfe ----------------------------------------------------------------------------- */
 .knopf {
   display: block;
   width: 100%;
   min-height: 48px;
   margin-top: 0.75rem;
-  padding: 0.6rem 1rem;
+  padding: 0.6rem 1.1rem;
+  font: inherit;
   font-size: 1rem;
-  font-weight: 600;
-  border: 0;
-  border-radius: 10px;
+  font-weight: 650;
+  border: 1px solid var(--akzent);
+  border-radius: var(--radius-klein);
   background: var(--akzent);
   color: var(--akzent-text);
   cursor: pointer;
+  transition: transform 80ms ease, background-color 120ms ease;
 }
-.knopf:disabled { opacity: 0.6; cursor: progress; }
+.knopf:active:not(:disabled) { transform: scale(0.98); }
+.knopf:disabled { opacity: 0.55; cursor: progress; }
 
 .knopf-leise {
   width: auto;
   margin: 0;
   background: transparent;
   color: var(--akzent);
-  border: 1px solid var(--rand);
+  border-color: var(--rand);
+  font-weight: 600;
 }
-
-.reiter {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-}
-.reiter-knopf {
-  min-height: 48px;
-  font-size: 1rem;
-  border: 1px solid var(--rand);
-  border-radius: 10px;
-  background: var(--karte);
-  color: var(--text);
-  cursor: pointer;
-}
-.reiter-knopf[aria-current="page"] {
-  background: var(--akzent);
-  color: var(--akzent-text);
-  border-color: var(--akzent);
-}
-
-.meldung { color: var(--fehler); font-weight: 600; }
-.hinweis, .platzhalter { color: var(--leise); }
-
-@media (min-width: 40rem) {
-  .reiter { grid-template-columns: repeat(5, 1fr); }
-}
-
-/* --- Bereiche (#27–#30) ------------------------------------------------------------ */
-h3 { font-size: 1rem; margin: 1rem 0 0.5rem; }
-a { color: var(--akzent); }
-
 .knopf-zweitrangig {
   background: transparent;
   color: var(--akzent);
   border: 2px solid var(--akzent);
 }
-
 .zeile {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 .zeile .knopf { width: auto; margin-top: 0; }
+.zeile h2 { margin: 0; }
 
-.status { min-height: 1.5em; margin: 0.75rem 0; font-weight: 600; }
-
-.liste { list-style: none; margin: 0; padding: 0; }
-.eintrag {
+/* --- Reiter: untere Leiste am Handy, Segmente ab 48rem --------------------------------- */
+.reiter {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: var(--karte);
   border-top: 1px solid var(--rand);
-  padding: 0.75rem 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -4px 16px rgba(16, 33, 58, 0.08);
 }
-.eintrag-kopf {
+.reiter-knopf {
   display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-height: var(--nav-hoehe);
+  padding: 0.35rem 0.1rem;
+  font: inherit;
+  font-size: 0.72rem;
   font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  border: 0;
+  border-top: 3px solid transparent;
+  background: transparent;
+  color: var(--leise);
+  cursor: pointer;
 }
+.reiter-knopf svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.reiter-knopf[aria-current="page"] {
+  color: var(--akzent);
+  border-top-color: var(--akzent);
+  background: var(--akzent-weich);
+}
+
+@media (min-width: 48rem) {
+  .reiter {
+    position: static;
+    margin: 1.25rem 0 0;
+    gap: 0.35rem;
+    padding: 0.35rem;
+    border: 1px solid var(--rand);
+    border-radius: var(--radius);
+    box-shadow: var(--schatten);
+  }
+  .reiter-knopf {
+    flex-direction: row;
+    gap: 0.5rem;
+    min-height: 48px;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    border: 0;
+    border-radius: var(--radius-klein);
+  }
+}
+
+/* --- Meldungen und Zustände ------------------------------------------------------------- */
+.meldung { color: var(--fehler); font-weight: 600; }
+.hinweis, .platzhalter { color: var(--leise); }
+.status { min-height: 1.5em; margin: 0.75rem 0; font-weight: 600; }
 .leise { color: var(--leise); }
+.hinweis-box {
+  border-left: 4px solid var(--bernstein);
+  border-radius: 0 var(--radius-klein) var(--radius-klein) 0;
+  padding: 0.6rem 0.9rem;
+  margin: 0.75rem 0;
+  background: var(--bernstein-weich);
+}
+#neue-version { max-width: 44rem; margin: 0.75rem auto 0; }
+#repo-info { margin: 1rem 0 0; font-size: 0.9rem; }
 
 .marke {
-  font-size: 0.85rem;
-  padding: 0.1rem 0.5rem;
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.1rem 0.6rem;
   border-radius: 999px;
   border: 1px solid var(--rand);
+  background: var(--flaeche);
   white-space: nowrap;
 }
-.marke-success { border-color: #2e7d32; color: #2e7d32; }
+.marke-success { border-color: var(--gruen); color: var(--gruen); }
 .marke-failure, .marke-cancelled { border-color: var(--fehler); color: var(--fehler); }
 .marke-in_progress, .marke-queued { border-color: var(--akzent); color: var(--akzent); }
+.frist-faellig { border-color: var(--fehler); color: var(--fehler); font-weight: 700; }
+.frist-heute, .frist-bald { border-color: var(--bernstein); background: var(--bernstein-weich); font-weight: 700; }
+
+/* --- Listen ----------------------------------------------------------------------------- */
+.liste { list-style: none; margin: 0; padding: 0; }
+.eintrag { border-top: 1px solid var(--rand); padding: 0.8rem 0; }
+.liste > .eintrag:first-child { border-top: 0; }
+.eintrag-kopf { display: flex; justify-content: space-between; gap: 0.5rem; font-weight: 600; }
 
 .listen-knopf {
   display: block;
   width: 100%;
   min-height: 48px;
   text-align: left;
-  padding: 0.6rem 0.75rem;
+  padding: 0.6rem 0.9rem;
   margin: 0.4rem 0;
-  font-size: 1rem;
+  font: inherit;
   border: 1px solid var(--rand);
-  border-radius: 10px;
-  background: var(--karte);
+  border-radius: var(--radius-klein);
+  background: var(--flaeche);
   color: var(--text);
   cursor: pointer;
 }
 
-textarea, input[type="text"], input[type="date"] {
-  width: 100%;
-  font: inherit;
-  font-size: 1rem;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--rand);
-  border-radius: 8px;
-  background: var(--hintergrund);
-  color: var(--text);
-}
-textarea { min-height: 18rem; resize: vertical; line-height: 1.45; }
-input[type="text"] { min-height: 48px; }
+/* Offene Themen */
+.aufgabe-kopf { display: flex; align-items: flex-start; gap: 0.7rem; }
+.aufgabe-text { flex: 1; font-weight: 600; overflow-wrap: anywhere; padding-top: 0.6rem; }
+.haken-knopf { width: 48px; min-height: 48px; margin-top: 0; padding: 0; font-size: 1.4rem; flex: none; }
+.aufgabe .zeile { justify-content: flex-start; margin-top: 0.5rem; }
+.aufgabe > .marke { margin: 0.4rem 0 0 calc(48px + 0.7rem); }
+.erledigt-text { text-decoration: line-through; color: var(--leise); overflow-wrap: anywhere; }
+details { margin-top: 1.25rem; }
+summary { cursor: pointer; font-weight: 600; min-height: 44px; display: flex; align-items: center; }
 
 .schalter {
   display: flex;
@@ -213,32 +311,25 @@ input[type="text"] { min-height: 48px; }
   min-height: 48px;
 }
 
+/* Gedächtnis / Entwürfe */
 .diff { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; }
-.diff-neu { background: rgba(46, 125, 50, 0.15); }
-.diff-weg { background: rgba(179, 38, 30, 0.15); text-decoration: line-through; }
-
+.diff-neu { background: rgba(46, 125, 50, 0.18); }
+.diff-weg { background: rgba(179, 38, 30, 0.18); text-decoration: line-through; }
 .md-titel { font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0; }
 .md-abschnitt { font-weight: 700; margin: 1rem 0 0.25rem; }
 .md-punkt { margin: 0.2rem 0 0.2rem 1.2rem; list-style: disc; display: list-item; }
-.hinweis-box {
-  border-left: 4px solid var(--akzent);
-  padding: 0.5rem 0.75rem;
-  margin: 0.75rem 0;
-  background: var(--hintergrund);
-}
 
 .fuss { margin: 1.5rem 0 1rem; text-align: center; color: var(--leise); }
 
-/* --- Offene Themen (#42) ---------------------------------------------------------------- */
-.aufgabe-kopf { display: flex; align-items: flex-start; gap: 0.6rem; }
-.aufgabe-text { flex: 1; font-weight: 600; overflow-wrap: anywhere; }
-.haken-knopf { width: 48px; min-height: 48px; margin-top: 0; padding: 0; font-size: 1.4rem; flex: none; }
-.erledigt-text { text-decoration: line-through; color: var(--leise); overflow-wrap: anywhere; }
-.frist-faellig { border-color: var(--fehler); color: var(--fehler); font-weight: 700; }
-.frist-heute, .frist-bald { border-color: var(--akzent); color: var(--akzent); font-weight: 700; }
-details { margin-top: 1rem; }
+@media (prefers-reduced-motion: reduce) {
+  .knopf { transition: none; }
+  .knopf:active:not(:disabled) { transform: none; }
+}
 
 .mail-text {
+  background: var(--flaeche);
+  border-radius: var(--radius-klein);
+  padding: 0.75rem;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font: inherit;
@@ -247,4 +338,3 @@ details { margin-top: 1rem; }
   overflow: auto;
 }
 
-.logo { vertical-align: -0.45rem; border-radius: 8px; margin-right: 0.25rem; }
