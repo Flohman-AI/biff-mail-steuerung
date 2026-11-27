@@ -9,7 +9,7 @@
   <meta name="robots" content="noindex, nofollow">
   <meta name="color-scheme" content="light dark">
   <title>biff-mail Steuerung</title>
-  <meta name="theme-color" content="#1f5fbf">
+  <meta name="theme-color" content="#10213a">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
@@ -18,8 +18,10 @@
 </head>
 <body>
   <header class="kopf">
-    <h1><img class="logo" src="logo.svg" alt="" width="32" height="32"> biff-mail Steuerung</h1>
-    <button id="abmelden" class="knopf knopf-leise" type="button" hidden>Abmelden</button>
+    <div class="kopf-innen">
+      <h1><img class="logo" src="logo.svg" alt="" width="36" height="36"><span>biff-mail Steuerung</span></h1>
+      <button id="abmelden" class="knopf knopf-leise" type="button" hidden>Abmelden</button>
+    </div>
   </header>
 
   <p id="neue-version" class="hinweis-box" role="status" hidden>
@@ -50,11 +52,11 @@
       <p id="repo-info" class="hinweis"></p>
 
       <nav class="reiter" aria-label="Bereiche">
-        <button class="reiter-knopf" type="button" data-ziel="bereich-agent" aria-current="page">Agent</button>
-        <button class="reiter-knopf" type="button" data-ziel="bereich-aufgaben">Offene Themen</button>
-        <button class="reiter-knopf" type="button" data-ziel="bereich-zeitplan">Zeitplan</button>
-        <button class="reiter-knopf" type="button" data-ziel="bereich-gedaechtnis">Gedächtnis</button>
-        <button class="reiter-knopf" type="button" data-ziel="bereich-entwuerfe">Entwürfe</button>
+        <button class="reiter-knopf" type="button" data-ziel="bereich-agent" aria-current="page"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span>Agent</span></button>
+        <button class="reiter-knopf" type="button" data-ziel="bereich-aufgaben"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="m4 6 2 2 3-3M4 14l2 2 3-3M13 7h7M13 15h7"/></svg><span>Offene Themen</span></button>
+        <button class="reiter-knopf" type="button" data-ziel="bereich-zeitplan"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Zeitplan</span></button>
+        <button class="reiter-knopf" type="button" data-ziel="bereich-gedaechtnis"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11"/></svg><span>Gedächtnis</span></button>
+        <button class="reiter-knopf" type="button" data-ziel="bereich-entwuerfe"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4"/></svg><span>Entwürfe</span></button>
       </nav>
 
       <section id="bereich-agent" class="karte bereich" aria-labelledby="t-agent">
